@@ -16,7 +16,10 @@ class FailureReporter implements Reporter {
     explanation?: string;
   }> = [];
 
-  onBegin(_config: FullConfig) {
+  private config!: FullConfig;
+
+  onBegin(config: FullConfig) {
+    this.config = config;
     this.failures = [];
   }
 
@@ -47,6 +50,7 @@ class FailureReporter implements Reporter {
         });
 
         failure.explanation = explanation.explanation;
+
         console.log('\n=== LLM Failure Explanation ===');
         console.log('Test:', failure.testTitle);
         console.log(explanation.explanation);
@@ -55,6 +59,7 @@ class FailureReporter implements Reporter {
           error instanceof Error ? error.message : String(error);
 
         failure.explanation = `LLM explanation unavailable: ${message}`;
+
         console.error(
           `Failure Explainer could not analyze "${failure.testTitle}": ${message}`,
         );
@@ -62,7 +67,12 @@ class FailureReporter implements Reporter {
     }
 
     const outputPath = join('reports', 'failure-explanations.json');
-    writeFileSync(outputPath, JSON.stringify(this.failures, null, 2), 'utf8');
+    writeFileSync(
+      outputPath,
+      JSON.stringify(this.failures, null, 2),
+      'utf8',
+    );
+
     console.log(`Failure explanations saved to ${outputPath}`);
   }
 }
