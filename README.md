@@ -1,14 +1,102 @@
-
 # TestMu SDET-1 Assessment
 
-A Playwright and TypeScript test automation project covering Login, Dashboard, and REST API scenarios, with an LLM-assisted test failure explanation feature.
+A TypeScript and Playwright test automation project demonstrating UI testing, REST API testing, prompt engineering for test-case generation, and an attempted LLM-powered Failure Explainer.
+
+**GitHub Repository:** https://github.com/Kunaljoshi12/testmu-sdet1-kunaljoshi
 
 ## Project Status
 
-- Playwright UI and API tests have been executed locally.
-- The Failure Explainer reporter detects failed tests and attempts a real OpenAI API request.
-- The live LLM response is not verified because the API returned HTTP 429: no credits remaining.
-- Login and Dashboard tests use local fixtures. API tests use a local mock HTTP server; they do not validate a production application.
+This project was created for the TestMu SDET-1 AI-Native Quality Engineering Challenge.
+
+The project contains executable Playwright tests, documented test cases and prompts, an LLM integration implementation, a custom test reporter, GitHub Actions configuration, and an AI usage log.
+
+### Verification Summary
+
+- **Chromium tests:** 21 passed in the verified local run.
+- **UI tests:** Login and Dashboard tests use controlled local fixtures.
+- **API tests:** Use a local mock HTTP server.
+- **LLM integration:** A real OpenAI API request was attempted.
+- **LLM response:** Not successfully verified because the API returned HTTP 429 due to no remaining API credits.
+- **Public repository:** Published on GitHub.
+
+The passing tests demonstrate the implemented fixture and mock-server scenarios. They do not establish that the tests have been validated against a production application.
+
+## Assessment Tasks
+
+### Task 1 — Setup and Scaffold
+
+The project uses TypeScript and Playwright Test with separate directories for UI tests, API tests, AI integration, and reporting.
+
+Completed:
+- Created the project structure.
+- Configured Playwright and npm scripts.
+- Added a GitHub Actions workflow.
+- Created the initial Git commit with a message mentioning ChatGPT assistance.
+- Published the repository publicly.
+
+### Task 2 — Prompt Engineering and Test Case Generation
+
+The file `prompts.md` documents prompts, generated test cases, prompt refinement notes, assumptions, and limitations for the Login, Dashboard, and REST API modules.
+
+The test cases cover the following areas:
+
+**Login**
+- Valid login
+- Invalid credentials
+- Forgot password
+- Repeated login failures and fixture lockout
+- Required-field validation
+
+**Dashboard**
+- Widget loading
+- Data accuracy against fixture data
+- Sorting and filtering
+- Permission-based visibility
+- Mobile viewport rendering
+
+**REST API**
+- Authentication token validation
+- Create, read, update, and delete operations
+- Invalid input and not-found responses
+- Rate limiting
+
+**Coverage limitations**
+
+Not every scenario documented in `prompts.md` has been implemented as an executable test. Session expiry, dedicated server-error handling for HTTP 5xx responses, and schema validation remain areas for further implementation and verification.
+
+The Login and Dashboard tests use controlled fixtures. The API tests use a local mock server rather than a production application.
+
+## Task 3 — LLM Failure Explainer
+
+The project implements an LLM-powered Failure Explainer using the OpenAI JavaScript SDK.
+
+### Intended workflow
+
+1. Playwright executes the test suite.
+2. The custom reporter identifies failed or timed-out tests.
+3. The reporter collects the test title and error message.
+4. The failure details are passed to the `explainFailure` function.
+5. The function attempts a real OpenAI API request.
+6. When a response is returned, the reporter prints the explanation and writes the result to a JSON file.
+
+### Implementation files
+
+- `src/ai/failure-explainer.ts` — Sends failure details to the OpenAI API and processes the response.
+- `src/ai/check-openai.cjs` — A separate script for checking API connectivity.
+- `src/reporting/failure-reporter.ts` — Collects failures and attempts to generate explanations.
+
+### Current verification status
+
+A real API request was attempted during testing, but the OpenAI API returned HTTP 429 because no API credits remained.
+
+Therefore:
+- A successful live LLM-generated explanation has not been verified.
+- No fabricated response is presented as actual LLM output.
+- The reporter records the API error when an explanation cannot be generated.
+- The reporter writes to `reports/failure-explanations.json` when failures are analyzed.
+- Attachment of the LLM explanation directly to the Playwright HTML test report has not been verified.
+
+The implementation is present, but the successful live-response requirement remains outstanding.
 
 ## Technology Stack
 
@@ -17,12 +105,16 @@ A Playwright and TypeScript test automation project covering Login, Dashboard, a
 - Playwright Test
 - OpenAI JavaScript SDK
 - dotenv
+- Git and GitHub
+- GitHub Actions
 
 ## Project Structure
 
 ```text
 testmu-sdet1-kunaljoshi/
 ├── .github/
+│   └── workflows/
+│       └── playwright.yml
 ├── src/
 │   ├── ai/
 │   │   ├── check-openai.cjs
@@ -33,55 +125,89 @@ testmu-sdet1-kunaljoshi/
 │   ├── api/
 │   │   └── api.spec.ts
 │   ├── ui/
-│   │   ├── login.spec.ts
-│   │   └── dashboard.spec.ts
+│   │   ├── dashboard.spec.ts
+│   │   └── login.spec.ts
 │   └── baseline.spec.ts
-├── reports/
 ├── prompts.md
 ├── ai-usage-log.md
 ├── playwright.config.ts
 ├── package.json
-└── .env.example
+├── package-lock.json
+├── .env.example
+├── .gitignore
+└── README.md
 ```
+
+Generated reports and local environment files are excluded from version control.
 
 ## Prerequisites
 
-Install Node.js and npm. Then open a terminal in the project directory.
+Install:
+- Node.js with npm
+- Git, if you want to clone the repository
 
 ## Installation
 
+Clone the repository and enter the project directory:
+
 ```bash
-npm install
+git clone https://github.com/Kunaljoshi12/testmu-sdet1-kunaljoshi.git
+cd testmu-sdet1-kunaljoshi
+```
+
+Install dependencies:
+
+```bash
+npm ci
+```
+
+Install the Playwright browsers:
+
+```bash
 npx playwright install
 ```
 
-## Run Tests
+On Linux CI runners, browser system dependencies may also be required. The included GitHub Actions workflow installs them with `npx playwright install --with-deps`.
 
-Run all tests:
+## Running the Tests
 
-```bash
-npx playwright test
-```
-
-Run Chromium tests:
+Run the complete Playwright test suite:
 
 ```bash
-npx playwright test --project=chromium
+npm test
 ```
 
-Run the API tests:
+Run the Chromium project:
+
+```bash
+npm run test:chromium
+```
+
+Run tests in headed mode:
+
+```bash
+npm run test:headed
+```
+
+Open the Playwright UI:
+
+```bash
+npm run test:ui
+```
+
+Run the API tests in Chromium:
 
 ```bash
 npx playwright test tests/api/api.spec.ts --project=chromium
 ```
 
-Run the Login tests:
+Run the Login tests in Chromium:
 
 ```bash
 npx playwright test tests/ui/login.spec.ts --project=chromium
 ```
 
-Run the Dashboard tests:
+Run the Dashboard tests in Chromium:
 
 ```bash
 npx playwright test tests/ui/dashboard.spec.ts --project=chromium
@@ -90,42 +216,69 @@ npx playwright test tests/ui/dashboard.spec.ts --project=chromium
 Open the HTML report:
 
 ```bash
-npx playwright show-report
+npm run report
 ```
 
-## LLM Failure Explainer
+The verified local Chromium run completed with 21 passing tests. Test results can vary with environment and code changes.
 
-The custom Playwright reporter collects failed test titles and error messages. It calls the `explainFailure` function, prints any returned explanation, and writes the result to:
+## Configuring the OpenAI API
 
-`reports/failure-explanations.json`
+The Failure Explainer requires API access to generate a live explanation.
 
-### Configure the API key
+1. Create a local `.env` file in the project root.
+2. Add your own API key:
 
-Create a local `.env` file in the project root:
-
-```text
-OPENAI_API_KEY=your_api_key_here
+```dotenv
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-Never commit `.env` or expose API keys in source code, logs, or screenshots. The `.gitignore` file excludes local environment files.
+3. Replace the placeholder locally with your own valid API key if you have API access.
 
-### Current limitation
+**Security requirements:**
+- Never commit `.env`.
+- Never hardcode API keys in source code.
+- Never publish secrets in logs, screenshots, or documentation.
+- Keep `.env.example` limited to a placeholder.
+- Configure GitHub Actions secrets if a workflow later needs authenticated API access.
 
-A real API request was attempted, but OpenAI returned HTTP 429 because no API credits remained. Therefore, a successful LLM explanation has not yet been verified. The reporter records the API error rather than generating a fabricated explanation.
+A ChatGPT subscription does not automatically provide OpenAI API credits. The live Failure Explainer cannot be fully verified until a valid API request succeeds.
 
-## Test Case Documentation
+## GitHub Actions
 
-See `prompts.md` for the prompts, illustrative test cases, assumptions, and limitations for Login, Dashboard, and REST API modules.
+The workflow is located at:
 
-## AI Usage
+`.github/workflows/playwright.yml`
 
-See `ai-usage-log.md` for the AI tools used, assistance provided, implementation status, and verification evidence.
+It is configured to:
+- Run on pushes to `main` or `master`.
+- Run on pull requests targeting `main` or `master`.
+- Install Node.js dependencies.
+- Install Playwright browsers and system dependencies.
+- Execute the Playwright test suite.
+- Upload the Playwright HTML report as an artifact when available.
+
+Because the custom reporter attempts an OpenAI request when tests fail, a failed test may produce an API error if the required API access or credits are unavailable. CI execution should be checked in GitHub Actions after changes are pushed.
+
+## AI Usage Documentation
+
+The file `ai-usage-log.md` records the AI tools used, their purpose, the assistance provided, and the verification evidence.
+
+The file `prompts.md` contains the documented prompts and test cases for the three assessment modules.
+
+AI-generated suggestions and code should be reviewed and verified before being used in a real testing environment.
 
 ## Known Limitations and Next Steps
 
-1. Test against a real application when its URL and test credentials are available.
-2. Replace local fixtures and the mock API with application-specific test environments where appropriate.
-3. Configure API credits and verify a successful live LLM response.
-4. Verify the generated explanation in the Playwright reporting workflow.
-5. Review the full test suite across Chromium, Firefox, and WebKit.
-6. Review the repository and publish it to GitHub.
+1. Implement and verify the remaining documented scenarios, including session expiry, dedicated HTTP 5xx handling, and schema validation.
+2. Run UI tests against a real application when an appropriate test environment and test credentials are available.
+3. Restore API access and verify a successful live LLM response.
+4. Verify how the LLM explanation is attached to test results and reporting artifacts.
+5. Run and review the complete test suite across Chromium, Firefox, and WebKit.
+6. Review GitHub Actions results and ensure the documented commands work from a clean clone.
+7. Expand failure-analysis context with safe, relevant page state or API response details when available.
+
+## Assessment Transparency
+
+This repository demonstrates the project structure, executable fixture-based UI tests, mock-server API tests, prompt documentation, and an attempted real LLM integration.
+
+The project status and limitations are documented explicitly. A successful live LLM response and its inclusion in the test report remain outstanding verification items.
