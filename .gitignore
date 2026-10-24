@@ -1,0 +1,26 @@
+
+# Dependencies
+node_modules/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Playwright output
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Build and coverage output
+/dist/
+/coverage/
+
+# Local logs
+*.log
+
+# Generated test reports
+/reports/*
+!/reports/.gitkeep
